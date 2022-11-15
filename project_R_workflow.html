@@ -357,8 +357,7 @@ display: none;
 </div>
 
 
-<div id="creating-environment" class="section level2">
-<h2>Creating environment</h2>
+<p>Creating the environment</p>
 <p>This is the set of commands used to create the environment used
 within the CLIMB server for this analysis. The environment itself is
 specifically a conda environment using mamba as a package installer.
@@ -376,16 +375,30 @@ conda config --set channel_priority strict
 
 mamba install snippy trimmomatic fastqc -y
 mamba install -c bioconda snpEff=4 -y</code></pre>
-</div>
-<div id="using-fastqc-and-trimmomatic" class="section level2">
-<h2>Using fastqc and trimmomatic</h2>
+<p>Using fastqc and trimmomatic</p>
 <p>On the CLIMB server, fastqc cannot open its GUI. To circumvent this
 the query files were added into the command instead of opening within
 the GUI, and they were output into their own fastqc_report folder.</p>
 <p>Still within the CLIMB server, using trimmomatic was used for
 trimming these reads, specifically the paired end outputs. Its own
 directory was made ‘trimmed_reads’, and parameters were set for 4
-threads, using both computer CPUs ADD WHAT THE PARAM LINE MEANS</p>
+threads, using 2 computer CPUs. ILLUMINACLIP was used to cut adapters
+and other Illumina-related sequences from the read, using the TruSeq3.fa
+file for identifying where the adapters are. This is followed by the
+‘seed mismatch value’, which species the maximum mismatch count where
+full matches are still allowed, and then the ‘palindrome clip
+threshold’, which specifies the match accuracy between the two reads
+before consideration as a paired end palindrome read for alignment. The
+final value is the ‘simple clip threshold’, which specifies the how
+accurate the match between the adapter and the sequence its read against
+must be.</p>
+<p>LEADING is responsible for removing the low quality bases seen at the
+start, as long as it is a value below the value that is set. TRAILING,
+does the same, except for low quality bases at the end. MINLEN is
+repsonsible for removing reads that fall below the minimal length value
+set, normally carried out as the last trimmomatic step.</p>
+<p>The PHRED quality was not specified between either 33 and 64, with
+trimmomatic running with TOPPHRED33 in this case.</p>
 <p>These commands were all carried out within the individual directories
 that required the analysis’.</p>
 <pre class="quality"><code>
@@ -403,7 +416,7 @@ trimmomatic PE -threads 4 \
       trimmed_reads/Y1_P188_02_reverse_unpaired.fq.gz \
     ILLUMINACLIP:TruSeq3-PE.fa:2:30:10:2:True LEADING:3 TRAILING:3 MINLEN:36
 </code></pre>
-<p>##Mapping out trimmed reads, and calling variants</p>
+<p>Mapping out trimmed reads, and calling variants</p>
 <p>The trimmomatic reads were mapped against the progenitor NCBI strain
 and the differences between the generationally different strains and the
 progenitor strain using snippy. These were put into their own directory
@@ -413,15 +426,14 @@ analysis was being carried out.</p>
 <pre class="read"><code>
 snippy --cpus 2 --outdir variant_calling \
   --ref reference_strain_data/M1152_NC_003888_genbank_JTM_edit_SNIPPY_progenitor.gb \
-  --R1 trimmed _reads/Y1_P188_02_forward_paired.fq.gz \
+  --R1 trimmed_reads/Y1_P188_02_forward_paired.fq.gz \
   --R2 trimmed_reads/Y1_P188_02_reverse_paired.fq.gz
 </code></pre>
-<p>##Further analysis</p>
+<p>Further analysis</p>
 <p>Beyond this, the output snps.tab, snps.html, snps.bam, and ref.fa
 files were all used to analysis the identified variants from the variant
 calling. The snps.bam and ref.fa were specifically put into Tablet for
 visualisation of this.</p>
-</div>
 
 
 
